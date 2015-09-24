@@ -1,6 +1,7 @@
 package disks3cache
 
 import (
+	"io/ioutil"
 	"log"
 
 	"github.com/gregjones/httpcache/diskcache"
@@ -24,6 +25,7 @@ func (c *Cache) Get(key string) (resp []byte, ok bool) {
 	resp, ok = c.s3.Get(key)
 	if ok == true {
 		log.Printf("Found %v in s3 cache", key)
+		go c.disk.Set(key, resp)
 		return resp, ok
 	}
 	log.Printf("%v not found in cache", key)
@@ -31,8 +33,9 @@ func (c *Cache) Get(key string) (resp []byte, ok bool) {
 }
 
 func (c *Cache) Set(key string, resp []byte) {
-	log.Printf("Setting key %v", key)
+	log.Printf("Setting key %v on disk", key)
 	go c.disk.Set(key, resp)
+	log.Printf("Setting key %v in s3", key)
 	go c.s3.Set(key, resp)
 }
 
@@ -43,6 +46,9 @@ func (c *Cache) Delete(key string) {
 }
 
 func New(cacheDir string, cacheSize uint64, bucketURL string) *Cache {
+	if cacheDir == "" {
+		cacheDir, _ = ioutil.TempDir("", "disks3cache")
+	}
 	dv := diskv.New(diskv.Options{
 		BasePath: 	cacheDir,
 		CacheSizeMax:	cacheSize * 1024 * 1024,
