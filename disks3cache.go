@@ -6,13 +6,13 @@ import (
 
 	"github.com/gregjones/httpcache/diskcache"
 	"github.com/peterbourgon/diskv"
-	"sourcegraph.com/sourcegraph/s3cache"
+	"github.com/victortrac/disks3cache/s3cache"
 )
 
 
 type Cache struct {
-	disk 	*diskcache.Cache
-	s3 	*s3cache.Cache
+	disk     *diskcache.Cache
+	s3       *s3cache.Cache
 }
 
 func (c *Cache) Get(key string) (resp []byte, ok bool) {
@@ -50,11 +50,11 @@ func New(cacheDir string, cacheSize uint64, bucketURL string) *Cache {
 		cacheDir, _ = ioutil.TempDir("", "disks3cache")
 	}
 	dv := diskv.New(diskv.Options{
-		BasePath: 	cacheDir,
-		CacheSizeMax:	cacheSize * 1024 * 1024,
+		BasePath:       cacheDir,
+		CacheSizeMax:   cacheSize * 1024 * 1024,
 	})
 	return &Cache{
-		disk:	diskcache.NewWithDiskv(dv),
-		s3:	s3cache.New(bucketURL),
+		disk:   diskcache.NewWithDiskv(dv),
+		s3:     s3cache.New(bucketURL),
 	}
 }
