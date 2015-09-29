@@ -24,23 +24,22 @@ func (c *Cache) Get(key string) (resp []byte, ok bool) {
 	}
 	resp, ok = c.s3.Get(key)
 	if ok == true {
-		log.Printf("Found %v in s3 cache", key)
+		log.Printf("Found %v in s3 cache: %v", key, s3cache.CacheKeyToObjectKey(key))
 		go c.disk.Set(key, resp)
 		return resp, ok
 	}
-	log.Printf("%v not found in cache", key)
+	log.Printf("%v not found in cache: %v", key, s3cache.CacheKeyToObjectKey(key))
 	return []byte{}, ok
 }
 
 func (c *Cache) Set(key string, resp []byte) {
-	log.Printf("Setting key %v on disk", key)
+	log.Printf("Setting key %v on disk and s3: %v", key, s3cache.CacheKeyToObjectKey(key))
 	go c.disk.Set(key, resp)
-	log.Printf("Setting key %v in s3", key)
 	go c.s3.Set(key, resp)
 }
 
 func (c *Cache) Delete(key string) {
-	log.Printf("Deleting key %v", key)
+	log.Printf("Deleting key %v on disk and s3: %v", key, s3cache.CacheKeyToObjectKey(key))
 	go c.disk.Delete(key)
 	go c.s3.Delete(key)
 }
