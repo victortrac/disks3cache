@@ -2,8 +2,8 @@ package disks3cache
 
 import (
 	"io/ioutil"
-	"log"
 
+	"github.com/going/toolkit/log"
 	"github.com/gregjones/httpcache/diskcache"
 	"github.com/peterbourgon/diskv"
 	"github.com/victortrac/disks3cache/s3cache"
@@ -19,27 +19,27 @@ func (c *Cache) Get(key string) (resp []byte, ok bool) {
 	// Check disk first
 	resp, ok = c.disk.Get(key)
 	if ok == true {
-		log.Printf("Found %v in disk cache", key)
+		log.Debugf("Found %v in disk cache", key)
 		return resp, ok
 	}
 	resp, ok = c.s3.Get(key)
 	if ok == true {
-		log.Printf("Found %v in s3 cache: %v", key, s3cache.CacheKeyToObjectKey(key))
+		log.Debugf("Found %v in s3 cache: %v", key, s3cache.CacheKeyToObjectKey(key))
 		go c.disk.Set(key, resp)
 		return resp, ok
 	}
-	log.Printf("%v not found in cache: %v", key, s3cache.CacheKeyToObjectKey(key))
+	log.Debugf("%v not found in cache: %v", key, s3cache.CacheKeyToObjectKey(key))
 	return []byte{}, ok
 }
 
 func (c *Cache) Set(key string, resp []byte) {
-	log.Printf("Setting key %v on disk and s3: %v", key, s3cache.CacheKeyToObjectKey(key))
+	log.Debugf("Setting key %v on disk and s3: %v", key, s3cache.CacheKeyToObjectKey(key))
 	go c.disk.Set(key, resp)
 	go c.s3.Set(key, resp)
 }
 
 func (c *Cache) Delete(key string) {
-	log.Printf("Deleting key %v on disk and s3: %v", key, s3cache.CacheKeyToObjectKey(key))
+	log.Debugf("Deleting key %v on disk and s3: %v", key, s3cache.CacheKeyToObjectKey(key))
 	go c.disk.Delete(key)
 	go c.s3.Delete(key)
 }

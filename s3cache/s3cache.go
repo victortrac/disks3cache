@@ -9,9 +9,9 @@ import (
 	"encoding/hex"
 	"io"
 	"io/ioutil"
-	"log"
 	"regexp"
 
+	"github.com/going/toolkit/log"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
@@ -34,13 +34,13 @@ func (c *Cache) Get(key string) (resp []byte, ok bool) {
 	object, err := c.S3.GetObject(params)
 
 	if err != nil {
-		log.Printf("s3cache: %v", err.Error())
+		log.Errorf("Error getting s3 object: %v", err.Error())
 		return []byte{}, false
 	}
 
 	data, err := ioutil.ReadAll(object.Body)
 	if err != nil {
-		log.Printf("s3cache: %v", err.Error())
+		log.Errorf("Error reading s3 object: %v", err.Error())
 		return []byte{}, false
 	}
 	return data, err == nil
@@ -56,7 +56,7 @@ func (c *Cache) Set(key string, resp []byte) {
 	_, err := c.S3.PutObject(params)
 
 	if err != nil {
-		log.Printf("s3cache: %v", err.Error())
+		log.Errorf("Error Putting s3 object: %v", err.Error())
 		return
 	}
 }
@@ -70,7 +70,7 @@ func (c *Cache) Delete(key string) {
 	_, err := c.S3.DeleteObject(params)
 
 	if err != nil {
-		log.Printf("s3cache: %v", err.Error())
+		log.Errorf("Error deleting s3 object: %v", err.Error())
 		return
 	}
 }
