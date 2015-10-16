@@ -34,7 +34,7 @@ func (c *Cache) Get(key string) (resp []byte, ok bool) {
 	object, err := c.S3.GetObject(params)
 
 	if err != nil {
-		log.Errorf("Error getting s3 object: %v", err.Error())
+		log.Debugf("Error getting s3 object: %v", err)
 		return []byte{}, false
 	}
 
