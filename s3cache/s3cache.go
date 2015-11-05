@@ -13,6 +13,7 @@ import (
 
 	"github.com/going/toolkit/log"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
@@ -86,9 +87,11 @@ func New(bucketURL string) *Cache {
 	re := regexp.MustCompile(`//(s3-)?([\w\-)]+)..*/([\w\-]+$)`).FindStringSubmatch(bucketURL)
 	region := re[2]
 	bucket := re[3]
+	maxRetries := 10
+	session := session.New(&aws.Config{Region: aws.String(region), MaxRetries: &maxRetries})
 	log.Printf("s3cache: S3 Connection - Region: %v, Bucket: %v", region, bucket)
 	return &Cache{
-		S3: s3.New(aws.NewConfig().WithRegion(region).WithMaxRetries(10)),
+		S3: s3.New(session),
 		Bucket: bucket,
 	}
 }
